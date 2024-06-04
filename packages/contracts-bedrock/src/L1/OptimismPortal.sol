@@ -18,6 +18,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { L1Block } from "src/L2/L1Block.sol";
 import { Predeploys } from "src/libraries/Predeploys.sol";
 import "src/libraries/PortalErrors.sol";
+import { BalanceNormalizer } from "src/libraries/BalanceNormalizer.sol";
 
 /// @custom:proxied
 /// @title OptimismPortal
@@ -368,7 +369,7 @@ contract OptimismPortal is Initializable, ResourceMetering, ISemver {
         l2Sender = _tx.sender;
 
         bool success;
-        (address token,) = gasPayingToken();
+        (address token, uint8 originDecimals) = gasPayingToken();
         if (token == Constants.ETHER) {
             // Trigger the call to the target contract. We use a custom low level method
             // SafeCall.callWithMinGas to ensure two key properties
@@ -389,6 +390,9 @@ contract OptimismPortal is Initializable, ResourceMetering, ISemver {
                 // Update the contracts internal accounting of the amount of native asset in L2.
                 _balance -= _tx.value;
 
+                uint8 targetDecimals = BalanceNormalizer.getDecimals(token);
+                uint256 normalizedWithdraw = BalanceNormalizer.normalize(originDecimals, targetDecimals, _tx.value);
+
                 // Read the balance of the target contract before the transfer so the consistency
                 // of the transfer can be checked afterwards.
                 uint256 startBalance = IERC20(token).balanceOf(address(this));
@@ -396,10 +400,10 @@ contract OptimismPortal is Initializable, ResourceMetering, ISemver {
                 // Transfer the ERC20 balance to the target, accounting for non standard ERC20
                 // implementations that may not return a boolean. This reverts if the low level
                 // call is not successful.
-                IERC20(token).safeTransfer({ to: _tx.target, value: _tx.value });
+                IERC20(token).safeTransfer({ to: _tx.target, value: normalizedWithdraw });
 
                 // The balance must be transferred exactly.
-                if (IERC20(token).balanceOf(address(this)) != startBalance - _tx.value) {
+                if (IERC20(token).balanceOf(address(this)) != startBalance - normalizedWithdraw) {
                     revert TransferFailed();
                 }
             }
@@ -449,11 +453,14 @@ contract OptimismPortal is Initializable, ResourceMetering, ISemver {
         metered(_gasLimit)
     {
         // Can only be called if an ERC20 token is used for gas paying on L2
-        (address token,) = gasPayingToken();
+        (address token, uint8 targetDecimals) = gasPayingToken();
         if (token == Constants.ETHER) revert OnlyCustomGasToken();
 
+        uint8 originDecimals = BalanceNormalizer.getDecimals(token);
+        uint256 normalizedMint = BalanceNormalizer.normalize(originDecimals, targetDecimals, _mint);
+
         // Gives overflow protection for L2 account balances.
-        _balance += _mint;
+        _balance += normalizedMint;
 
         // Get the balance of the portal before the transfer.
         uint256 startBalance = IERC20(token).balanceOf(address(this));
@@ -468,7 +475,7 @@ contract OptimismPortal is Initializable, ResourceMetering, ISemver {
 
         _depositTransaction({
             _to: _to,
-            _mint: _mint,
+            _mint: normalizedMint,
             _value: _value,
             _gasLimit: _gasLimit,
             _isCreation: _isCreation,

@@ -420,9 +420,9 @@ contract SystemConfig_Init_CustomGasToken is SystemConfig_Init {
         assertEq(systemConfig.gasPayingTokenSymbol(), "ETH");
     }
 
-    /// @dev Tests that initialization fails if decimals are not 18.
+    /// @dev Tests that initialization fails if decimals > 18.
     function test_initialize_customGasToken_wrongDecimals_fails() external {
-        vm.mockCall(address(token), abi.encodeWithSelector(token.decimals.selector), abi.encode(8));
+        vm.mockCall(address(token), abi.encodeWithSelector(token.decimals.selector), abi.encode(19));
         vm.expectRevert("SystemConfig: bad decimals of gas paying token");
 
         cleanStorageAndInit(address(token));
