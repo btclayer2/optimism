@@ -30,7 +30,7 @@ config=$(cat << EOL
   "l1StartingBlockTag": "$blockhash",
 
   "l1ChainID": 11155111,
-  "l2ChainID": 42069,
+  "l2ChainID": 11505,
   "l2BlockTime": 2,
   "l1BlockTime": 12,
 
@@ -39,7 +39,7 @@ config=$(cat << EOL
   "channelTimeout": 300,
 
   "p2pSequencerAddress": "$GS_SEQUENCER_ADDRESS",
-  "batchInboxAddress": "0xff00000000000000000000000000000000042069",
+  "batchInboxAddress": "0xff00000000000000000000000000000000011505",
   "batchSenderAddress": "$GS_BATCHER_ADDRESS",
 
   "l2OutputOracleSubmissionInterval": 120,
@@ -52,29 +52,26 @@ config=$(cat << EOL
   "finalizationPeriodSeconds": 12,
 
   "proxyAdminOwner": "$GS_ADMIN_ADDRESS",
-  "baseFeeVaultRecipient": "$GS_ADMIN_ADDRESS",
-  "l1FeeVaultRecipient": "$GS_ADMIN_ADDRESS",
-  "sequencerFeeVaultRecipient": "$GS_ADMIN_ADDRESS",
+  "baseFeeVaultRecipient": "0xcAF084133CBdBE27490d3afB0Da220a40C32E307",
+  "l1FeeVaultRecipient": "0xcAF084133CBdBE27490d3afB0Da220a40C32E307",
+  "sequencerFeeVaultRecipient": "0xcAF084133CBdBE27490d3afB0Da220a40C32E307",
   "finalSystemOwner": "$GS_ADMIN_ADDRESS",
   "superchainConfigGuardian": "$GS_ADMIN_ADDRESS",
 
-  "baseFeeVaultMinimumWithdrawalAmount": "0x8ac7230489e80000",
-  "l1FeeVaultMinimumWithdrawalAmount": "0x8ac7230489e80000",
-  "sequencerFeeVaultMinimumWithdrawalAmount": "0x8ac7230489e80000",
-  "baseFeeVaultWithdrawalNetwork": 0,
-  "l1FeeVaultWithdrawalNetwork": 0,
-  "sequencerFeeVaultWithdrawalNetwork": 0,
+  "baseFeeVaultMinimumWithdrawalAmount": "0x16345785d8a0000",
+  "l1FeeVaultMinimumWithdrawalAmount": "0x16345785d8a0000",
+  "sequencerFeeVaultMinimumWithdrawalAmount": "0x16345785d8a0000",
+  "baseFeeVaultWithdrawalNetwork": 1,
+  "l1FeeVaultWithdrawalNetwork": 1,
+  "sequencerFeeVaultWithdrawalNetwork": 1,
 
   "gasPriceOracleOverhead": 0,
   "gasPriceOracleScalar": 1000000,
 
-  "enableGovernance": true,
-  "governanceTokenSymbol": "OP",
-  "governanceTokenName": "Optimism",
-  "governanceTokenOwner": "$GS_ADMIN_ADDRESS",
+  "enableGovernance": false,
 
   "l2GenesisBlockGasLimit": "0x1c9c380",
-  "l2GenesisBlockBaseFeePerGas": "0x3b9aca00",
+  "l2GenesisBlockBaseFeePerGas": "0x2faf080",
   "l2GenesisRegolithTimeOffset": "0x0",
 
   "eip1559Denominator": 50,
@@ -97,12 +94,18 @@ config=$(cat << EOL
   "faultGameGenesisBlock": 0,
   "faultGameGenesisOutputRoot": "0x0000000000000000000000000000000000000000000000000000000000000000",
   "faultGameSplitDepth": 14,
+  "faultGameWithdrawalDelay": 86400,
 
   "preimageOracleMinProposalSize": 1800000,
-  "preimageOracleChallengePeriod": 86400
+  "preimageOracleChallengePeriod": 86400,
+
+  "useFaultProofs": false,
+  "useCustomGasToken": true,
+  "customGasTokenAddress": "0x044AAeC1cf19d64e821208d1b862439775069370",
 }
 EOL
 )
 
 # Write the config file
 echo "$config" > deploy-config/getting-started.json
+echo "$config" > deploy-config/sepolia-wbtc-11505.json
